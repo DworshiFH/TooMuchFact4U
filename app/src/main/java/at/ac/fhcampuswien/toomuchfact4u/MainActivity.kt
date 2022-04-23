@@ -11,6 +11,7 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import at.ac.fhcampuswien.toomuchfact4u.navigation.FactNavigation
 import at.ac.fhcampuswien.toomuchfact4u.ui.theme.TooMuchFact4UTheme
 
 class MainActivity : ComponentActivity() {
@@ -50,11 +51,8 @@ class MainActivity : ComponentActivity() {
         setContent {
             TooMuchFact4UTheme {
                 // A surface container using the 'background' color from the theme
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colors.background
-                ) {
-                    Greeting("Android")
+                MyApp{
+                    FactNavigation()
                 }
             }
         }
@@ -62,14 +60,8 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun Greeting(name: String) {
-    Text(text = "Hello $name!")
-}
-
-@Preview(showBackground = true)
-@Composable
-fun DefaultPreview() {
-    TooMuchFact4UTheme {
-        Greeting("Android")
+fun MyApp(content: @Composable () -> Unit){
+    TooMuchFact4UTheme() {
+        content()
     }
 }
