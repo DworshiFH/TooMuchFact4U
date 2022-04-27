@@ -6,8 +6,6 @@ data class Result(
     var result: List<Fact>?
 )
 
-import androidx.compose.runtime.Composable
-
 data class Fact(
     @SerializedName("question")
     val question: String?,
