@@ -14,6 +14,8 @@ data class Fact(
     val correct_answer: String?,
 
     val incorrect_answers: Incorrect_answer?,
+
+    val all_answers: List<String>
 )
 
 data class Incorrect_answer(

@@ -12,11 +12,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import at.ac.fhcampuswien.toomuchfact4u.Fact
+import at.ac.fhcampuswien.toomuchfact4u.navigation.FactNavigation
+import at.ac.fhcampuswien.toomuchfact4u.viewmodels.FactViewModel
 
 
-@Preview(showBackground = true)
 @Composable
-fun DetailScreenQuestion() {
+fun DetailScreenQuestion(fact : Fact, displayFactAsQuestion: Boolean) {
     Scaffold(
         topBar = {
             TopAppBar{
@@ -25,7 +27,6 @@ fun DetailScreenQuestion() {
                     Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Arrow Back" )
                     Text(text = "Detail Screen", style = MaterialTheme.typography.h6)
                 }
-
             }
         }
     ) {
@@ -34,12 +35,15 @@ fun DetailScreenQuestion() {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Question()
-            AnswerButton()
-            AnswerButton()
-            AnswerButton()
-            AnswerButton()
-
-    }}
+            if(displayFactAsQuestion){
+                for(f in fact.all_answers){
+                    AnswerButton(f)
+                }
+            } else {
+                fact.correct_answer?.let { it1 -> AnswerButton(it1) }
+            }
+        }
+    }
 }
 
 
@@ -69,14 +73,14 @@ fun DetailScreenFact() {
 
 
 @Composable
-fun AnswerButton(){
+fun AnswerButton(text: String = "answer"){
     MaterialTheme {
         ExtendedFloatingActionButton(
             modifier = Modifier
                 .padding(15.dp)
                 .fillMaxWidth(),
             onClick = { /* ... */ },
-            text = { Text("Answer",
+            text = { Text(text,
             fontSize = 20.sp)
             }
         )
