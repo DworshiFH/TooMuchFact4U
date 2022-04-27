@@ -19,6 +19,7 @@ class MainActivity : ComponentActivity() {
     override fun onStart(){
         super.onStart()
         Log.i("MainActivity", "onStart called")
+        //TODO start Fact Thread
     }
 
     override fun onResume(){
@@ -64,4 +65,8 @@ fun MyApp(content: @Composable () -> Unit){
     TooMuchFact4UTheme() {
         content()
     }
+
+    //val fact1: Fact
+    //fact1 = Fact(question = "asdf", incorrectAnswers = listOf("asdf","asdf"), correctAnswer = "asdf")
+
 }
