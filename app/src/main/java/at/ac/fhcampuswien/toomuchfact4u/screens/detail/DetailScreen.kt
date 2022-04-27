@@ -6,8 +6,13 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -37,10 +42,10 @@ fun DetailScreenQuestion(fact : Fact, displayFactAsQuestion: Boolean) {
             Question()
             if(displayFactAsQuestion){
                 for(f in fact.all_answers){
-                    AnswerButton(f)
+                    fact.correct_answer?.let { it1 -> AnswerButton(f, it1) }
                 }
             } else {
-                fact.correct_answer?.let { it1 -> AnswerButton(it1) }
+                fact.correct_answer?.let { it1 -> AnswerButton(it1, fact.correct_answer) }
             }
         }
     }
@@ -71,20 +76,28 @@ fun DetailScreenFact() {
         }}
 }*/
 
-
 @Composable
-fun AnswerButton(text: String = "answer"){
+fun AnswerButton(text: String = "answer", correctAnswer: String){
     MaterialTheme {
+        var color by mutableStateOf(Color.White)
         ExtendedFloatingActionButton(
             modifier = Modifier
                 .padding(15.dp)
                 .fillMaxWidth(),
-            onClick = { /* ... */ },
+            backgroundColor = color,
+            onClick = {
+                          if(text == correctAnswer){
+                              // richtig
+                              color = Color.Green
+                          } else {
+                              // falsch
+                              color = Color.Red
+                          }
+                      },
             text = { Text(text,
             fontSize = 20.sp)
             }
         )
-
 }}
 
 @Composable
