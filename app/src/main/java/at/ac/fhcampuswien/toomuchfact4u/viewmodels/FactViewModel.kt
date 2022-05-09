@@ -1,11 +1,7 @@
 package at.ac.fhcampuswien.toomuchfact4u.viewmodels
 
 import android.util.Log
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import at.ac.fhcampuswien.toomuchfact4u.Fact
 import at.ac.fhcampuswien.toomuchfact4u.api.FactsAPI
 import kotlinx.coroutines.CoroutineScope
@@ -14,14 +10,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import java.lang.Exception
 
 class FactViewModel : ViewModel() {
     private val _facts = mutableListOf<Fact>()
-
-    private val factList: List<Fact> by mutableStateOf(listOf())
-
-    var errorMessage: String by mutableStateOf("")
 
     fun getNextFactFromQueue() : Fact {
         val fact = _facts[0]
@@ -40,19 +31,30 @@ class FactViewModel : ViewModel() {
 
             val response = service.getRandomFact()
 
+            //val resCategory = service.getFactFromCategory()
+
             withContext(Dispatchers.Main){
                 if (response.isSuccessful){
-                    val items = response.body()
                     Log.i("", response.toString())
-                    if(items != null) {
-                        for (i in 0 until items.count()){
-                            val question = items[i].question ?: "N/A"
-                            Log.i("question", question)
 
-                            val correct_answer = items[i].correct_answer ?: "N/A"
-                            Log.i("correct_answer", correct_answer)
-                        }
-                    }
+                    Log.i("Fact", response.body().toString())
+
+                    //TODO Nullable abfangen
+
+                    var fact = Fact("","", listOf(""),listOf(""))
+
+                    fact.question = response.body()?.result?.get(0)?.question
+                    fact.correct_answer = response.body()?.result?.get(0)?.correct_answer
+                    fact.incorrect_answers = response.body()?.result?.get(0)?.incorrect_answers as List<String>?
+
+                    var answers = fact.incorrect_answers?.plus(fact.correct_answer)
+
+                    fact.all_answers = answers as List<String>?
+
+                    Log.i("Fact Object", fact.toString())
+
+                    _facts.plus(fact)
+
                 } else {
                     Log.e("RETROFIT_ERROR", response.code().toString())
                 }
@@ -75,18 +77,18 @@ class FactViewModel : ViewModel() {
     }
     fun setCategory(index: Int){
         when(index) {
-            0 -> setURL("https://opentdb.com/api.php?amount=1") //All
-            1 -> setURL("https://opentdb.com/api.php?amount=1&category=21") //Sports
-            2 -> setURL("https://opentdb.com/api.php?amount=1&category=23") //History
+            0 -> setURL("") //All
+            1 -> setURL("category=21") //Sports
+            2 -> setURL("category=23") //History
         }
     }
 
-    private var URL = "https://opentdb.com/api.php?amount=1&type=multiple"
-    fun setURL(URL: String){
-        this.URL = URL
+    private var category_url = ""
+    fun setURL(url: String){
+        this.category_url = url
     }
     fun getURL(): String{
-        return URL
+        return category_url
     }
 
     private var displayFactAsQuestion = false

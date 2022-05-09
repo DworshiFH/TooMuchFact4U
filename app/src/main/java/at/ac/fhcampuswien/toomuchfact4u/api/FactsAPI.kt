@@ -12,35 +12,11 @@ import retrofit2.http.GET
 import retrofit2.http.Path
 
 interface FactsAPI {
-
-
     @GET("api.php?amount=1&{category}")
     suspend fun getFactFromCategory(
         @Path("category") category: String
-    ) : List<Fact>
+    ) : Response<NestedJSONModel>
 
-    @GET("api.php?amount=10")
-    suspend fun getRandomFact() : Response<List<Fact>>
-
-    /*companion object {
-        var apiService: FactsAPI? = null
-        fun getInstance() : FactsAPI {
-            if (apiService == null) {
-                apiService = Retrofit.Builder()
-                    .baseUrl("https://opentdb.com/")
-                    .addConverterFactory(GsonConverterFactory.create())
-                    .build().create(FactsAPI::class.java)
-            }
-
-
-
-            return apiService!!
-        }
-    }*/
+    @GET("api.php?amount=1")
+    suspend fun getRandomFact() : Response<NestedJSONModel>
 }
-
-/*
-"https://opentdb.com/api.php?amount=1" //All
-"https://opentdb.com/api.php?amount=1&category=21" //Sports
-"https://opentdb.com/api.php?amount=1&category=23" //History
- */

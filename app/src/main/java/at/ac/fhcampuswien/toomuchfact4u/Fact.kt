@@ -7,19 +7,11 @@ data class Result(
 )
 
 data class Fact(
-    @SerializedName("question")
-    val question: String?,
+    var question: String?,
 
-    @SerializedName("correct_answer")
-    val correct_answer: String?,
+    var correct_answer: String?,
 
-    val incorrect_answers: Incorrect_answer?,
+    var incorrect_answers: List<String>?,
 
-    val all_answers: List<String>
-)
-
-data class Incorrect_answer(
-    val incorrectAnswer1: String?,
-    val incorrectAnswer2: String?,
-    val incorrectAnswer3: String?
+    var all_answers: List<String>?
 )
