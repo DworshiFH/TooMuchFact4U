@@ -10,13 +10,13 @@ import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.app.NotificationCompat
 import at.ac.fhcampuswien.toomuchfact4u.viewmodels.FactViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import at.ac.fhcampuswien.toomuchfact4u.navigation.FactScreens
+import at.ac.fhcampuswien.toomuchfact4u.widgets.simpleNotification
 
 @Composable
 fun HomeScreen(navController: NavController, viewModel: FactViewModel = viewModel()){
@@ -32,7 +32,9 @@ fun HomeScreen(navController: NavController, viewModel: FactViewModel = viewMode
 }
 
 @Composable
-fun MainContent(navController: NavController, viewModel: FactViewModel){
+fun MainContent(navController: NavController, factVM: FactViewModel){
+
+    val context = factVM.getNotificationContext()
 
     Column(modifier = Modifier
         .fillMaxWidth()
@@ -59,20 +61,38 @@ fun MainContent(navController: NavController, viewModel: FactViewModel){
                     value = sliderPosition,
                     onValueChange = {
                         sliderPosition = it
-                        //TODO: Notification
+                        context?.let {
+                            simpleNotification(
+                                context = it,
+                                channelId = factVM.getCHANNEL_ID(),
+                                notificationId = 3,
+                                textContent = "Fact Frequency Changed!",
+                                priority = NotificationCompat.PRIORITY_HIGH
+                            )
+                        }
                     },
                     valueRange = 1f..5f,
                     onValueChangeFinished = {
                         Log.i("HomeScreen","Fact Frequency Value Changed")
                         //TODO
                         //TODO: Notification
+                        factVM.setFactFrequency(sliderPosition)
+                        context?.let {
+                            simpleNotification(
+                                context = it,
+                                channelId = factVM.getCHANNEL_ID(),
+                                notificationId = 4,
+                                textContent = "Fact Frequency Set to " + factVM.getFactFrequency().toString(),
+                                priority = NotificationCompat.PRIORITY_HIGH
+                            )
+                        }
                     },
                     steps = 3
                 )
             }
         }
 
-        DropdownCategorySelector(viewModel)
+        DropdownCategorySelector(factVM)
 
         Divider()
 
@@ -88,8 +108,23 @@ fun MainContent(navController: NavController, viewModel: FactViewModel){
                     checked = useSoundState.value,
                     onCheckedChange = {
                         useSoundState.value = it
-                        viewModel.setUseSound(it)
-                        //TODO: Notification
+                        factVM.setUseSound(it)
+                        var text = ""
+                        context?.let {
+                            if(useSoundState.value){
+                                text = "Now using pleasant sounds."
+                            } else {
+                                text = "No longer using pleasant sounds."
+                            }
+                            simpleNotification(
+                                context = it,
+                                channelId = factVM.getCHANNEL_ID(),
+                                notificationId = 1,
+                                textContent = text,
+                                priority = NotificationCompat.PRIORITY_HIGH
+                            )
+
+                        }
                     }
                 )
             }
@@ -109,11 +144,24 @@ fun MainContent(navController: NavController, viewModel: FactViewModel){
                     checked = factAsQuestionCheckedState.value,
                     onCheckedChange = {
                         factAsQuestionCheckedState.value = it
-                        viewModel.setDisplayFactAsQuestion(it)
-                        //TODO: Notification
+                        factVM.setDisplayFactAsQuestion(it)
+                        context?.let {
 
-                        viewModel.fetchNewFact()
+                            var text = ""
+                            if(factAsQuestionCheckedState.value){
+                                text = "Now displaying Facts as Questions."
+                            } else {
+                                text = "Now just displaying Facts."
+                            }
 
+                            simpleNotification(
+                                context = it,
+                                channelId = factVM.getCHANNEL_ID(),
+                                notificationId = 1,
+                                textContent = text,
+                                priority = NotificationCompat.PRIORITY_HIGH
+                            )
+                        }
                     }
                 )
             }
@@ -121,7 +169,7 @@ fun MainContent(navController: NavController, viewModel: FactViewModel){
         
         Divider()
         Button(onClick = {
-            viewModel.fetchNewFact()
+            factVM.fetchNewFact()
         }) {
             Text(text = "Fetch Fact")
         }

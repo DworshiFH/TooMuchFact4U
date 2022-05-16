@@ -1,7 +1,6 @@
 package at.ac.fhcampuswien.toomuchfact4u.screens.detail
 
-import android.R
-import android.util.Log
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -11,16 +10,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.core.app.NotificationCompat
 import androidx.navigation.NavController
-import at.ac.fhcampuswien.toomuchfact4u.Fact
 import at.ac.fhcampuswien.toomuchfact4u.viewmodels.FactViewModel
+import at.ac.fhcampuswien.toomuchfact4u.widgets.simpleNotification
 
 @Composable
-fun DetailScreen(factVM : FactViewModel) {
+fun DetailScreen(factVM : FactViewModel, navController : NavController) {
 
     val fact = factVM.getNextFactFromQueue()
 
@@ -29,8 +27,12 @@ fun DetailScreen(factVM : FactViewModel) {
             TopAppBar{
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Spacer(modifier = Modifier.width(10.dp))
-                    Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Arrow Back" )
-                    Text(text = "Detail Screen", style = MaterialTheme.typography.h6)
+                    Icon(imageVector = Icons.Default.ArrowBack,
+                        contentDescription = "Arrow Back",
+                        modifier = Modifier.clickable{
+                            navController.popBackStack()
+                        })
+                    Text(text = "Fact", style = MaterialTheme.typography.h6)
                 }
             }
         }
@@ -42,25 +44,53 @@ fun DetailScreen(factVM : FactViewModel) {
             fact.question?.let { it1 ->
                 Text(text = it1,
                     textAlign = TextAlign.Center,
-                    fontSize = 30.sp,
+                    fontSize = 20.sp,
                     modifier = Modifier
                         .padding(30.dp))
             }
             if(factVM.getDisplayFactAsQuestion()){
                 for(f in fact.all_answers!!){
-                    fact.correct_answer?.let { it1 -> AnswerButton(f, it1, true){
-                        factVM.removeTopFactFromQueue()
-                    } }
+                    fact.correct_answer?.let { it1 -> AnswerButton(f, it1, true,
+                        code = {
+                            factVM.removeTopFactFromQueue()
+                            val context = factVM.getNotificationContext()
+                            context?.let {
+                                simpleNotification(
+                                    context = it,
+                                    channelId = factVM.getCHANNEL_ID(),
+                                    notificationId = 1,
+                                    textContent = "Correct Answer, you are very smart.",
+                                    priority = NotificationCompat.PRIORITY_HIGH
+                                )
+                            }
+                        }, code2 = {
+                            val context = factVM.getNotificationContext()
+                            context?.let {
+                                simpleNotification(
+                                    context = it,
+                                    channelId = factVM.getCHANNEL_ID(),
+                                    notificationId = 1,
+                                    textContent = "Wrong Answer, that was pretty stupid!",
+                                    priority = NotificationCompat.PRIORITY_HIGH
+                                )
+                            }
+                        })
+                    }
                 }
             } else {
                 fact.correct_answer?.let { it1 -> AnswerButton(it1, fact.correct_answer!!, false) }
+                factVM.removeTopFactFromQueue()
             }
         }
     }
 }
 
 @Composable
-fun AnswerButton(text: String, correctAnswer: String, displayFactAsQuestion: Boolean, code: () -> Unit = {}){
+fun AnswerButton(text: String,
+                 correctAnswer: String,
+                 displayFactAsQuestion: Boolean,
+                 code: () -> Unit = {},
+                 code2: () -> Unit = {}){
     MaterialTheme {
         var color = remember{ mutableStateOf(Color.White)}
         ExtendedFloatingActionButton(
@@ -74,12 +104,11 @@ fun AnswerButton(text: String, correctAnswer: String, displayFactAsQuestion: Boo
                         // richtig
                         color.value = Color.Green
                         code()
-
                     } else {
                         // falsch
                         color.value = Color.Red
+                        code2()
                     }
-                    //TODO notification
                 }
             },
             text = { Text(text = text, color = Color.Black) }
@@ -109,7 +138,7 @@ fun DetailScreenFact() {
             AnswerButton()
 
         }}
-}*/
+}
 
 @Composable
 fun Question(){
@@ -118,4 +147,4 @@ fun Question(){
         fontSize = 30.sp,
         modifier = Modifier
             .padding(30.dp))
-}
+}*/

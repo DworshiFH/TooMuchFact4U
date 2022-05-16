@@ -2,7 +2,7 @@ package at.ac.fhcampuswien.toomuchfact4u.api
 
 import com.google.gson.annotations.SerializedName
 
-data class NestedJSONModel(
+data class FactJSONModel(
     @SerializedName("response:code")
     var response_code: Int?,
     @SerializedName("results")

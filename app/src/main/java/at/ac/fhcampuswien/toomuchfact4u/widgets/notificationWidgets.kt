@@ -16,17 +16,6 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import at.ac.fhcampuswien.toomuchfact4u.R
 
-/*@Composable
-fun NotificationExpand(){
-    val context = LocalContext.current
-    val CHANNEL_ID = "FactNotifications"
-    val notificationId = 0
-
-    LaunchedEffect(Unit){
-        createNotificationChannel(channelId = CHANNEL_ID, context = context)
-    }
-}*/
-
 fun createNotificationChannel(channelId: String, context: Context) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
         val name = "blalba"

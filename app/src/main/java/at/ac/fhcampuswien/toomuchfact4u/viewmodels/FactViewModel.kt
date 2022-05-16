@@ -9,6 +9,7 @@ import androidx.core.app.NotificationCompat
 import androidx.lifecycle.ViewModel
 import at.ac.fhcampuswien.toomuchfact4u.Fact
 import at.ac.fhcampuswien.toomuchfact4u.api.FactsAPI
+import at.ac.fhcampuswien.toomuchfact4u.api.fetchFact
 import at.ac.fhcampuswien.toomuchfact4u.widgets.simpleNotification
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -16,8 +17,11 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.util.*
+import java.util.Collections.shuffle
 
-class FactViewModel : ViewModel() {
+class FactViewModel() : ViewModel() {
+
     private var _facts = mutableListOf<Fact>()
 
     private var category_url = ""
@@ -28,6 +32,8 @@ class FactViewModel : ViewModel() {
     private var _context: Context? = null
     private val CHANNEL_ID = "FactNotifications"
     private val notificationId = 0
+
+    private var factFrequency = 5f
 
 
     fun getNextFactFromQueue() : Fact {
@@ -44,7 +50,20 @@ class FactViewModel : ViewModel() {
     }
 
     fun fetchNewFact() {
-        val retrofit = Retrofit.Builder()
+        val fact = fetchFact()
+        _facts.add(fact)
+
+        _context?.let {
+            simpleNotification(
+                context = it,
+                channelId = CHANNEL_ID,
+                notificationId = notificationId,
+                textContent = "A new Fact has arrived 4 U.",
+                priority = NotificationCompat.PRIORITY_HIGH
+            )
+        }
+
+        /*val retrofit = Retrofit.Builder()
             .baseUrl("https://opentdb.com/")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
@@ -67,6 +86,10 @@ class FactViewModel : ViewModel() {
                     fact.incorrect_answers = response.body()?.result?.get(0)?.incorrect_answers as List<String>?
 
                     var answers = fact.incorrect_answers?.plus(fact.correct_answer)
+
+                    if (answers != null) {
+                        shuffle(answers)
+                    }
 
                     fact.all_answers = answers as List<String>?
 
@@ -91,7 +114,7 @@ class FactViewModel : ViewModel() {
                 }
             }
 
-        }
+        }*/
     }
 
     fun getNumOfFactsInQueue() : Int {
@@ -129,6 +152,21 @@ class FactViewModel : ViewModel() {
     fun setNotificationContext(context: Context){
         _context = context
     }
+    fun getNotificationContext() : Context? {
+        return _context
+    }
 
+    fun getCHANNEL_ID() : String{
+        return CHANNEL_ID
+    }
+    fun getNotificationId() : Int{
+        return notificationId
+    }
 
+    fun setFactFrequency(frequency: Float){
+        factFrequency = frequency
+    }
+    fun getFactFrequency() : Float {
+        return factFrequency
+    }
 }

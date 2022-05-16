@@ -32,7 +32,7 @@ fun FactNavigation(){
         composable(
             route = FactScreens.DetailScreen.name
         ){
-            DetailScreen(factVM = factVM)
+            DetailScreen(factVM = factVM, navController = navController)
         }
     }
 }
