@@ -8,6 +8,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import at.ac.fhcampuswien.toomuchfact4u.screens.home.HomeScreen
 import at.ac.fhcampuswien.toomuchfact4u.viewmodels.FactViewModel
+import at.ac.fhcampuswien.toomuchfact4u.screens.detail.DetailScreen
 
 @Composable
 fun FactNavigation(){
@@ -21,6 +22,11 @@ fun FactNavigation(){
         ) {
             HomeScreen(navController, factVM)
         }
-    }
 
+        composable(
+            route = FactScreens.DetailScreen.name
+        ){
+            DetailScreen(factVM = factVM)
+        }
+    }
 }

@@ -12,12 +12,23 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 class FactViewModel : ViewModel() {
-    private val _facts = mutableListOf<Fact>()
+    private var _facts = mutableListOf<Fact>()
+
+    private var category_url = ""
+
+    private val _categories = listOf("All Categories", "Sports", "History")
 
     fun getNextFactFromQueue() : Fact {
+        //TODO null _facts abfangen
+        Log.i("Fact Array in get",_facts.toString()) // debugging
         val fact = _facts[0]
-        _facts.removeAt(0)
         return fact
+    }
+
+    fun removeTopFactFromQueue() {
+        //TODO null _facts abfangen
+        _facts.removeAt(0)
+        Log.i("Fact Array in remove",_facts.toString()) // debugging
     }
 
     fun fetchNewFact() {
@@ -31,15 +42,11 @@ class FactViewModel : ViewModel() {
 
             val response = service.getRandomFact()
 
-            //val resCategory = service.getFactFromCategory()
-
             withContext(Dispatchers.Main){
                 if (response.isSuccessful){
                     Log.i("", response.toString())
 
                     Log.i("Fact", response.body().toString())
-
-                    //TODO Nullable abfangen
 
                     var fact = Fact("","", listOf(""),listOf(""))
 
@@ -53,7 +60,9 @@ class FactViewModel : ViewModel() {
 
                     Log.i("Fact Object", fact.toString())
 
-                    _facts.plus(fact)
+                    _facts.add(fact)
+
+                    Log.i("Fact Array",_facts.toString()) // debugging
 
                 } else {
                     Log.e("RETROFIT_ERROR", response.code().toString())
@@ -63,35 +72,22 @@ class FactViewModel : ViewModel() {
         }
     }
 
-    fun addFactToQueue(fact: Fact){
-        _facts.add(fact)
-    }
-
     fun getNumOfFactsInQueue() : Int {
         return _facts.size
     }
 
-    private val _categories = listOf("All Categories", "Sports", "History")
     fun getCategoryList() : List<String>{
         return _categories
     }
     fun setCategory(index: Int){
         when(index) {
-            0 -> setURL("") //All
-            1 -> setURL("category=21") //Sports
-            2 -> setURL("category=23") //History
+            0 -> category_url = "" //All
+            1 -> category_url = "category=21" //Sports
+            2 -> category_url = "category=23" //History
         }
     }
 
-    private var category_url = ""
-    fun setURL(url: String){
-        this.category_url = url
-    }
-    fun getURL(): String{
-        return category_url
-    }
-
-    private var displayFactAsQuestion = false
+    private var displayFactAsQuestion = true
     fun getDisplayFactAsQuestion(): Boolean{
         return displayFactAsQuestion
     }

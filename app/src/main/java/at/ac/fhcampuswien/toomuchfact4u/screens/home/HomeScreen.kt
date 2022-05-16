@@ -16,10 +16,10 @@ import at.ac.fhcampuswien.toomuchfact4u.viewmodels.FactViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import at.ac.fhcampuswien.toomuchfact4u.navigation.FactScreens
 
-@Preview(showBackground = true)
 @Composable
-fun HomeScreen(navController: NavController = rememberNavController(), viewModel: FactViewModel = viewModel()){
+fun HomeScreen(navController: NavController, viewModel: FactViewModel = viewModel()){
     Scaffold(
         topBar = {
             TopAppBar( title = {
@@ -27,12 +27,12 @@ fun HomeScreen(navController: NavController = rememberNavController(), viewModel
             } )
         }
     ) {
-        MainContent(viewModel)
+        MainContent(navController, viewModel)
     }
 }
 
 @Composable
-fun MainContent(/*TODO Navigation Component*/ viewModel: FactViewModel){
+fun MainContent(navController: NavController, viewModel: FactViewModel){
 
     Column(modifier = Modifier
         .fillMaxWidth()
@@ -118,6 +118,20 @@ fun MainContent(/*TODO Navigation Component*/ viewModel: FactViewModel){
                 )
             }
         }
+        
+        Divider()
+        Button(onClick = {
+            viewModel.fetchNewFact()
+        }) {
+            Text(text = "Fetch Fact")
+        }
+        
+        Divider()
+        Button(onClick = {
+            navController.navigate(route = FactScreens.DetailScreen.name)
+        }) {
+            Text(text = "Go To DetailScreen")
+        }
     }
 }
 
@@ -156,7 +170,6 @@ fun DropdownCategorySelector(viewModel: FactViewModel) {
                     expanded = false
                     viewModel.setCategory(index)
                     Log.i("HomeScreen", "index = $index")
-                    Log.i("HomeScreen", "Category = " + viewModel.getURL())
                 }) {
                     Text(text = items[index], style = MaterialTheme.typography.body1)
                 }

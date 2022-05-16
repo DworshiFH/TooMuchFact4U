@@ -1,14 +1,12 @@
 package at.ac.fhcampuswien.toomuchfact4u.screens.detail
 
 import android.R
+import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -16,13 +14,15 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import at.ac.fhcampuswien.toomuchfact4u.Fact
 import at.ac.fhcampuswien.toomuchfact4u.viewmodels.FactViewModel
 
 @Composable
-fun DetailScreenQuestion(factVM : FactViewModel, displayFactAsQuestion: Boolean) {
+fun DetailScreen(factVM : FactViewModel) {
 
-    val fact: Fact = factVM.getNextFactFromQueue()
+    val fact = factVM.getNextFactFromQueue()
 
     Scaffold(
         topBar = {
@@ -39,10 +39,18 @@ fun DetailScreenQuestion(factVM : FactViewModel, displayFactAsQuestion: Boolean)
             .fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Question()
-            if(displayFactAsQuestion){
+            fact.question?.let { it1 ->
+                Text(text = it1,
+                    textAlign = TextAlign.Center,
+                    fontSize = 30.sp,
+                    modifier = Modifier
+                        .padding(30.dp))
+            }
+            if(factVM.getDisplayFactAsQuestion()){
                 for(f in fact.all_answers!!){
-                    fact.correct_answer?.let { it1 -> AnswerButton(f, it1, true) }
+                    fact.correct_answer?.let { it1 -> AnswerButton(f, it1, true){
+                        factVM.removeTopFactFromQueue()
+                    } }
                 }
             } else {
                 fact.correct_answer?.let { it1 -> AnswerButton(it1, fact.correct_answer!!, false) }
@@ -52,32 +60,32 @@ fun DetailScreenQuestion(factVM : FactViewModel, displayFactAsQuestion: Boolean)
 }
 
 @Composable
-fun AnswerButton(text: String = "answer", correctAnswer: String, displayFactAsQuestion: Boolean){
+fun AnswerButton(text: String, correctAnswer: String, displayFactAsQuestion: Boolean, code: () -> Unit = {}){
     MaterialTheme {
-        var color by mutableStateOf(Color.White)
+        var color = remember{ mutableStateOf(Color.White)}
         ExtendedFloatingActionButton(
             modifier = Modifier
                 .padding(15.dp)
                 .fillMaxWidth(),
-            backgroundColor = color,
+            backgroundColor = color.value,
             onClick = {
                 if(displayFactAsQuestion){
                     if(text == correctAnswer){
                         // richtig
-                        color = Color.Green
-                        //TODO delete Fact when correct answer has been clicked
+                        color.value = Color.Green
+                        code()
+
                     } else {
                         // falsch
-                        color = Color.Red
+                        color.value = Color.Red
                     }
                     //TODO notification
                 }
             },
-            text = { Text(text,
-            fontSize = 20.sp)
-            }
+            text = { Text(text = text, color = Color.Black) }
         )
-}}
+    }
+}
 
 /*@Composable
 fun DetailScreenFact() {
@@ -109,5 +117,5 @@ fun Question(){
         textAlign = TextAlign.Center,
         fontSize = 30.sp,
         modifier = Modifier
-            .padding(30.dp),)
+            .padding(30.dp))
 }

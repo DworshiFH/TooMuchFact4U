@@ -10,9 +10,11 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import at.ac.fhcampuswien.toomuchfact4u.navigation.FactNavigation
 import at.ac.fhcampuswien.toomuchfact4u.ui.theme.TooMuchFact4UTheme
+import at.ac.fhcampuswien.toomuchfact4u.widgets.CreateNotificationChannel
 
 class MainActivity : ComponentActivity() {
 
