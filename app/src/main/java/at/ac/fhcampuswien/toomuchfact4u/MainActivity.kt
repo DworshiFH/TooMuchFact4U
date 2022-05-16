@@ -1,5 +1,9 @@
 package at.ac.fhcampuswien.toomuchfact4u
 
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.content.Context
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -14,7 +18,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import at.ac.fhcampuswien.toomuchfact4u.navigation.FactNavigation
 import at.ac.fhcampuswien.toomuchfact4u.ui.theme.TooMuchFact4UTheme
-import at.ac.fhcampuswien.toomuchfact4u.widgets.CreateNotificationChannel
+import at.ac.fhcampuswien.toomuchfact4u.widgets.*
 
 class MainActivity : ComponentActivity() {
 
@@ -67,8 +71,5 @@ fun MyApp(content: @Composable () -> Unit){
     TooMuchFact4UTheme() {
         content()
     }
-
-    //val fact1: Fact
-    //fact1 = Fact(question = "asdf", incorrectAnswers = listOf("asdf","asdf"), correctAnswer = "asdf")
-
 }
+

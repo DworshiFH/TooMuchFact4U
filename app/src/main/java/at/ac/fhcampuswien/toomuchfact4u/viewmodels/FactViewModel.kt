@@ -1,9 +1,15 @@
 package at.ac.fhcampuswien.toomuchfact4u.viewmodels
 
+import android.annotation.SuppressLint
+import android.content.Context
 import android.util.Log
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalContext
+import androidx.core.app.NotificationCompat
 import androidx.lifecycle.ViewModel
 import at.ac.fhcampuswien.toomuchfact4u.Fact
 import at.ac.fhcampuswien.toomuchfact4u.api.FactsAPI
+import at.ac.fhcampuswien.toomuchfact4u.widgets.simpleNotification
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -17,6 +23,12 @@ class FactViewModel : ViewModel() {
     private var category_url = ""
 
     private val _categories = listOf("All Categories", "Sports", "History")
+
+    @SuppressLint("StaticFieldLeak")
+    private var _context: Context? = null
+    private val CHANNEL_ID = "FactNotifications"
+    private val notificationId = 0
+
 
     fun getNextFactFromQueue() : Fact {
         //TODO null _facts abfangen
@@ -64,6 +76,16 @@ class FactViewModel : ViewModel() {
 
                     Log.i("Fact Array",_facts.toString()) // debugging
 
+                    _context?.let {
+                        simpleNotification(
+                            context = it,
+                            channelId = CHANNEL_ID,
+                            notificationId = notificationId,
+                            textContent = "A new Fact has arrived 4 U.",
+                            priority = NotificationCompat.PRIORITY_HIGH
+                        )
+                    }
+
                 } else {
                     Log.e("RETROFIT_ERROR", response.code().toString())
                 }
@@ -102,4 +124,11 @@ class FactViewModel : ViewModel() {
     fun setUseSound(useSound: Boolean){
         this.useSound = useSound
     }
+
+    @Composable
+    fun setNotificationContext(context: Context){
+        _context = context
+    }
+
+
 }
