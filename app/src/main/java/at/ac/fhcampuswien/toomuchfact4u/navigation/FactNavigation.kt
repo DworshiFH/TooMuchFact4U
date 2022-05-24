@@ -7,18 +7,24 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import at.ac.fhcampuswien.toomuchfact4u.db.FactDB
+import at.ac.fhcampuswien.toomuchfact4u.repositories.FactRepository
 import at.ac.fhcampuswien.toomuchfact4u.screens.home.HomeScreen
 import at.ac.fhcampuswien.toomuchfact4u.viewmodels.FactViewModel
 import at.ac.fhcampuswien.toomuchfact4u.screens.detail.DetailScreen
+import at.ac.fhcampuswien.toomuchfact4u.viewmodels.FactViewModelFactory
 import at.ac.fhcampuswien.toomuchfact4u.widgets.createNotificationChannel
 
 @Composable
 fun FactNavigation(){
-    val navController = rememberNavController()
-
-    val factVM: FactViewModel = viewModel()
-
     val context = LocalContext.current
+
+    val navController = rememberNavController()
+    val db = FactDB.getDatabase(context = context)
+    val repository = FactRepository(dao = db.factDao())
+
+    val factVM: FactViewModel = viewModel(factory = FactViewModelFactory(repository = repository))
+
     createNotificationChannel(channelId = "FactNotifications", context = context)
     factVM.setNotificationContext(context = context)
 

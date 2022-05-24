@@ -16,8 +16,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.viewmodel.compose.viewModel
+import at.ac.fhcampuswien.toomuchfact4u.db.FactDB
 import at.ac.fhcampuswien.toomuchfact4u.navigation.FactNavigation
 import at.ac.fhcampuswien.toomuchfact4u.ui.theme.TooMuchFact4UTheme
+import at.ac.fhcampuswien.toomuchfact4u.viewmodels.FactViewModel
 import at.ac.fhcampuswien.toomuchfact4u.widgets.*
 
 class MainActivity : ComponentActivity() {
@@ -56,6 +59,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
+            //TODO start Fact Thread
             TooMuchFact4UTheme {
                 // A surface container using the 'background' color from the theme
                 MyApp{
@@ -68,6 +72,7 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun MyApp(content: @Composable () -> Unit){
+
     TooMuchFact4UTheme() {
         content()
     }

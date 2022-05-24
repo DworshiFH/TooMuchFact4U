@@ -5,7 +5,7 @@ import retrofit2.http.GET
 import retrofit2.http.Path
 
 interface FactsAPI {
-    @GET("api.php?amount=1&{category}")
+    @GET("api.php?amount=1&category={category}")
     suspend fun getFactFromCategory(
         @Path("category") category: String
     ) : Response<FactJSONModel>

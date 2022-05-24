@@ -10,9 +10,9 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.*
 
-fun fetchFact() : Fact{
+fun fetchFact(use_category: Boolean = false, category: String = "23") : Fact{
 
-    var fact = Fact("","", listOf(""),listOf(""))
+    var fact = Fact(question = "", correct_answer = "", all_answers = listOf(""), incorrect_answers = listOf(""))
 
     val retrofit = Retrofit.Builder()
         .baseUrl("https://opentdb.com/")
@@ -22,7 +22,11 @@ fun fetchFact() : Fact{
     val service = retrofit.create(FactsAPI::class.java)
     CoroutineScope(Dispatchers.IO).launch {
 
-        val response = service.getRandomFact()
+        val response = if(use_category){
+            service.getFactFromCategory(category)
+        } else {
+            service.getRandomFact()
+        }
 
         withContext(Dispatchers.Main){
             if (response.isSuccessful){
@@ -30,6 +34,7 @@ fun fetchFact() : Fact{
 
                 Log.i("Fact", response.body().toString())
 
+                //parsing FactJSONModel object to Fact object
                 fact.question = response.body()?.result?.get(0)?.question
                 fact.correct_answer = response.body()?.result?.get(0)?.correct_answer
                 fact.incorrect_answers = response.body()?.result?.get(0)?.incorrect_answers as List<String>?

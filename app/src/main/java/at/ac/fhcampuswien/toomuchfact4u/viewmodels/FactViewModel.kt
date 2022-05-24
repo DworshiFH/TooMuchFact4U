@@ -4,27 +4,47 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.util.Log
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalContext
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import at.ac.fhcampuswien.toomuchfact4u.Fact
-import at.ac.fhcampuswien.toomuchfact4u.api.FactsAPI
 import at.ac.fhcampuswien.toomuchfact4u.api.fetchFact
+import at.ac.fhcampuswien.toomuchfact4u.repositories.FactRepository
 import at.ac.fhcampuswien.toomuchfact4u.widgets.simpleNotification
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
-import java.util.*
-import java.util.Collections.shuffle
 
-class FactViewModel() : ViewModel() {
+class FactViewModel( private val repository: FactRepository ) : ViewModel() {
 
-    private var _facts = mutableListOf<Fact>()
+    private var _facts = MutableStateFlow<List<Fact>>(emptyList())
+    val facts = _facts.asStateFlow()
 
-    private var category_url = ""
+    init {
+        viewModelScope.launch(Dispatchers.IO){
+            repository.getAllFacts().distinctUntilChanged()
+                .collect { listOfFacts ->
+                    if(listOfFacts.isNullOrEmpty()){
+                        Log.d("FactViewModel", "Empty fact list")
+                    } else {
+                        _facts.value = listOfFacts
+                    }
+                }
+        }
+        viewModelScope.launch(Dispatchers.IO){
+            repository.getAllFacts().collect { listOfFacts ->
+                if(listOfFacts.isNullOrEmpty()){
+                    Log.d("FactViewModel", "No facts 4 U")
+                } else {
+                    _facts.value = listOfFacts
+                }
+            }
+        }
+    }
+
+    private var categoryUrl = ""
+
+    private var useCategoryInUrl = false
 
     private val _categories = listOf("All Categories", "Sports", "History")
 
@@ -35,25 +55,27 @@ class FactViewModel() : ViewModel() {
 
     private var factFrequency = 5f
 
-
-    fun getNextFactFromQueue() : Fact {
+    /*fun getNextFactFromQueue() : Fact {
         //TODO null _facts abfangen
         Log.i("Fact Array in get",_facts.toString()) // debugging
         val fact = _facts[0]
         return fact
+    }*/
+    fun getFactsFromVM(): StateFlow<List<Fact>> {
+        return facts
     }
 
-    fun removeTopFactFromQueue() {
+    fun removeFact(fact: Fact) {
         //TODO null _facts abfangen
-        _facts.removeAt(0)
-        Log.i("Fact Array in remove",_facts.toString()) // debugging
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.deleteFact(fact)
+        }
     }
 
-    fun fetchNewFact() {
-        val fact = fetchFact()
-        _facts.add(fact)
+    fun fetchNewFactTest() {
+        val fact = fetchFact(use_category = useCategoryInUrl, category = categoryUrl)
 
-        _context?.let {
+        _context?.let { // Notification
             simpleNotification(
                 context = it,
                 channelId = CHANNEL_ID,
@@ -61,6 +83,10 @@ class FactViewModel() : ViewModel() {
                 textContent = "A new Fact has arrived 4 U.",
                 priority = NotificationCompat.PRIORITY_HIGH
             )
+        }
+
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.addFact(fact)
         }
 
         /*val retrofit = Retrofit.Builder()
@@ -117,8 +143,12 @@ class FactViewModel() : ViewModel() {
         }*/
     }
 
-    fun getNumOfFactsInQueue() : Int {
-        return _facts.size
+    fun getNumOfFactsInDB() : Int {
+        var size = 0
+        viewModelScope.launch(Dispatchers.IO) {
+            size = repository.getFactCount()
+        }
+        return size
     }
 
     fun getCategoryList() : List<String>{
@@ -126,9 +156,12 @@ class FactViewModel() : ViewModel() {
     }
     fun setCategory(index: Int){
         when(index) {
-            0 -> category_url = "" //All
-            1 -> category_url = "category=21" //Sports
-            2 -> category_url = "category=23" //History
+            0 -> {categoryUrl = ""
+                    useCategoryInUrl = false} //All
+            1 -> {categoryUrl = "21"
+                    useCategoryInUrl = true} //Sports
+            2 -> {categoryUrl = "23"
+                    useCategoryInUrl = true} //History
         }
     }
 

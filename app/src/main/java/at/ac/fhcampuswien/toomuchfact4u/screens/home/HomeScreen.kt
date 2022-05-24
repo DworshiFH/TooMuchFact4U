@@ -19,7 +19,7 @@ import at.ac.fhcampuswien.toomuchfact4u.navigation.FactScreens
 import at.ac.fhcampuswien.toomuchfact4u.widgets.simpleNotification
 
 @Composable
-fun HomeScreen(navController: NavController, viewModel: FactViewModel = viewModel()){
+fun HomeScreen(navController: NavController, factVM: FactViewModel = viewModel()){
     Scaffold(
         topBar = {
             TopAppBar( title = {
@@ -27,7 +27,7 @@ fun HomeScreen(navController: NavController, viewModel: FactViewModel = viewMode
             } )
         }
     ) {
-        MainContent(navController, viewModel)
+        MainContent(navController, factVM)
     }
 }
 
@@ -132,7 +132,7 @@ fun MainContent(navController: NavController, factVM: FactViewModel){
 
         Divider()
 
-        val factAsQuestionCheckedState = remember { mutableStateOf(false)}
+        val factAsQuestionCheckedState = remember { mutableStateOf(factVM.getDisplayFactAsQuestion())}
         Row(modifier = Modifier
             .padding(5.dp)
             .fillMaxWidth()){
@@ -149,9 +149,9 @@ fun MainContent(navController: NavController, factVM: FactViewModel){
 
                             var text = ""
                             if(factAsQuestionCheckedState.value){
-                                text = "Now displaying Facts as Questions."
+                                text = "Now displaying Facts as Questions, exciting."
                             } else {
-                                text = "Now just displaying Facts."
+                                text = "Now simply displaying Facts, boring."
                             }
 
                             simpleNotification(
@@ -169,7 +169,7 @@ fun MainContent(navController: NavController, factVM: FactViewModel){
         
         Divider()
         Button(onClick = {
-            factVM.fetchNewFact()
+            factVM.fetchNewFactTest()
         }) {
             Text(text = "Fetch Fact")
         }

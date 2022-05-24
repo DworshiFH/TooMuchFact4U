@@ -1,5 +1,6 @@
 package at.ac.fhcampuswien.toomuchfact4u.screens.detail
 
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
@@ -14,13 +15,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.NotificationCompat
 import androidx.navigation.NavController
+import at.ac.fhcampuswien.toomuchfact4u.Fact
 import at.ac.fhcampuswien.toomuchfact4u.viewmodels.FactViewModel
 import at.ac.fhcampuswien.toomuchfact4u.widgets.simpleNotification
 
 @Composable
 fun DetailScreen(factVM : FactViewModel, navController : NavController) {
 
-    val fact = factVM.getNextFactFromQueue()
+    //val fact = factVM.getFactsFromVM().collectAsState()
+
+    val facts: List<Fact> by factVM.getFactsFromVM().collectAsState()
+    Log.i("DetailScreen",facts.toString())
+    val fact = facts[0]
 
     Scaffold(
         topBar = {
@@ -32,7 +38,7 @@ fun DetailScreen(factVM : FactViewModel, navController : NavController) {
                         modifier = Modifier.clickable{
                             navController.popBackStack()
                         })
-                    Text(text = "Fact", style = MaterialTheme.typography.h6)
+                    Text(text = " Fact", style = MaterialTheme.typography.h6)
                 }
             }
         }
@@ -52,7 +58,7 @@ fun DetailScreen(factVM : FactViewModel, navController : NavController) {
                 for(f in fact.all_answers!!){
                     fact.correct_answer?.let { it1 -> AnswerButton(f, it1, true,
                         code = {
-                            factVM.removeTopFactFromQueue()
+                            factVM.removeFact(fact)
                             val context = factVM.getNotificationContext()
                             context?.let {
                                 simpleNotification(
@@ -79,7 +85,7 @@ fun DetailScreen(factVM : FactViewModel, navController : NavController) {
                 }
             } else {
                 fact.correct_answer?.let { it1 -> AnswerButton(it1, fact.correct_answer!!, false) }
-                factVM.removeTopFactFromQueue()
+                factVM.removeFact(fact)
             }
         }
     }
