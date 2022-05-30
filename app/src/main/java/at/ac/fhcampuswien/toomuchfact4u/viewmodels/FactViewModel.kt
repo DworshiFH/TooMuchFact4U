@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.util.Log
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -11,9 +12,9 @@ import at.ac.fhcampuswien.toomuchfact4u.Fact
 import at.ac.fhcampuswien.toomuchfact4u.api.fetchFact
 import at.ac.fhcampuswien.toomuchfact4u.repositories.FactRepository
 import at.ac.fhcampuswien.toomuchfact4u.widgets.simpleNotification
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
+import okhttp3.internal.wait
 
 class FactViewModel( private val repository: FactRepository ) : ViewModel() {
 
@@ -72,8 +73,28 @@ class FactViewModel( private val repository: FactRepository ) : ViewModel() {
         }
     }
 
-    fun fetchNewFactTest() {
-        val fact = fetchFact(use_category = useCategoryInUrl, category = categoryUrl)
+    suspend fun fetchNewFactTest() {
+
+        /*var fact = Fact(question = "",
+            correct_answer = "",
+            incorrect_answer_1 = "",
+            incorrect_answer_2 = "",
+            incorrect_answer_3 = "")
+
+        viewModelScope.launch{
+        }.join()
+
+        Log.i("FactVM", fact.toString())
+
+        delay(5000L)*/
+
+        viewModelScope.launch(Dispatchers.IO) {
+            val fact = async{ fetchFact(use_category = useCategoryInUrl, category = categoryUrl) }
+            //Log.i("FactVM", "Try to add fact to DB")
+            Log.i("FactVM", fact.await().toString())
+            //repository.addFact(fact.await())
+        }
+
 
         _context?.let { // Notification
             simpleNotification(
@@ -85,9 +106,7 @@ class FactViewModel( private val repository: FactRepository ) : ViewModel() {
             )
         }
 
-        viewModelScope.launch(Dispatchers.IO) {
-            repository.addFact(fact)
-        }
+
 
         /*val retrofit = Retrofit.Builder()
             .baseUrl("https://opentdb.com/")
@@ -202,4 +221,8 @@ class FactViewModel( private val repository: FactRepository ) : ViewModel() {
     fun getFactFrequency() : Float {
         return factFrequency
     }
+}
+
+private fun Job.onJoin(block: suspend CoroutineScope.() -> Unit) {
+
 }

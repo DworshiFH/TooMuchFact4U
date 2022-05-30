@@ -10,9 +10,14 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.*
 
-fun fetchFact(use_category: Boolean = false, category: String = "23") : Fact{
+suspend fun fetchFact(use_category: Boolean = false, category: String = "23") : Fact{
 
-    var fact = Fact(question = "", correct_answer = "", all_answers = listOf(""), incorrect_answers = listOf(""))
+    var fact = Fact(question = "",
+        correct_answer = "",
+        incorrect_answer_1 = "",
+        incorrect_answer_2 = "",
+        incorrect_answer_3 = "",
+    )
 
     val retrofit = Retrofit.Builder()
         .baseUrl("https://opentdb.com/")
@@ -37,15 +42,22 @@ fun fetchFact(use_category: Boolean = false, category: String = "23") : Fact{
                 //parsing FactJSONModel object to Fact object
                 fact.question = response.body()?.result?.get(0)?.question
                 fact.correct_answer = response.body()?.result?.get(0)?.correct_answer
-                fact.incorrect_answers = response.body()?.result?.get(0)?.incorrect_answers as List<String>?
-
-                var answers = fact.incorrect_answers?.plus(fact.correct_answer)
-
-                if (answers != null) {
-                    Collections.shuffle(answers)
+                fact.incorrect_answer_1 = response.body()?.result?.get(0)?.incorrect_answers?.get(0)
+                if(response.body()?.result?.get(0)?.incorrect_answers?.get(1) != null){
+                    fact.incorrect_answer_2 = response.body()?.result?.get(0)?.incorrect_answers?.get(1)
                 }
+                if(response.body()?.result?.get(0)?.incorrect_answers?.get(2) != null){
+                    fact.incorrect_answer_3 = response.body()?.result?.get(0)?.incorrect_answers?.get(2)
+                }
+                //fact.incorrect_answers = response.body()?.result?.get(0)?.incorrect_answers as List<String>?
 
-                fact.all_answers = answers as List<String>?
+                //var answers = fact.incorrect_answers?.plus(fact.correct_answer)
+
+                //if (answers != null) {
+                //    Collections.shuffle(answers)
+                //}
+
+                //fact.all_answers = answers as List<String>?
 
             } else {
                 Log.e("RETROFIT_ERROR", response.code().toString())

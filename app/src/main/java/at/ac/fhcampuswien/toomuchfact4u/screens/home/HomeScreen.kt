@@ -17,6 +17,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import at.ac.fhcampuswien.toomuchfact4u.navigation.FactScreens
 import at.ac.fhcampuswien.toomuchfact4u.widgets.simpleNotification
+import kotlinx.coroutines.launch
 
 @Composable
 fun HomeScreen(navController: NavController, factVM: FactViewModel = viewModel()){
@@ -168,8 +169,11 @@ fun MainContent(navController: NavController, factVM: FactViewModel){
         }
         
         Divider()
+        val scope = rememberCoroutineScope()
         Button(onClick = {
-            factVM.fetchNewFactTest()
+            scope.launch {
+                factVM.fetchNewFactTest()
+            }
         }) {
             Text(text = "Fetch Fact")
         }

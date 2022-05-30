@@ -15,9 +15,18 @@ data class Fact(
     @ColumnInfo(name = "correct_answer")
     var correct_answer: String?,
 
-    @ColumnInfo(name = "incorrect_answers")
-    var incorrect_answers: List<String>?,
+    //@ColumnInfo(name = "incorrect_answers")
+    //var incorrect_answers: List<String>?,
 
-    @ColumnInfo(name = "all_answers")
-    var all_answers: List<String>?
+    @ColumnInfo(name = "incorrect_answer_1")
+    var incorrect_answer_1: String?,
+
+    @ColumnInfo(name = "incorrect_answer_2")
+    var incorrect_answer_2: String?,
+
+    @ColumnInfo(name = "incorrect_answer_3")
+    var incorrect_answer_3: String?,
+
+    //@ColumnInfo(name = "all_answers")
+    //var all_answers: List<String>?
 )

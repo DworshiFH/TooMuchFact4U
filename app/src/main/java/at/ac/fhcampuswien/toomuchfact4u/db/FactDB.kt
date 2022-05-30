@@ -13,7 +13,7 @@ import at.ac.fhcampuswien.toomuchfact4u.Fact
     version = 1,
     exportSchema = false
 )
-@TypeConverters(Converters::class)
+//@TypeConverters(Converters::class)
 abstract class FactDB: RoomDatabase() {
     abstract fun factDao(): FactDao
 

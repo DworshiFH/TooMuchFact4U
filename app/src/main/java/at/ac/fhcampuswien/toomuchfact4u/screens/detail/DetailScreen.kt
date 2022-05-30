@@ -55,7 +55,15 @@ fun DetailScreen(factVM : FactViewModel, navController : NavController) {
                         .padding(30.dp))
             }
             if(factVM.getDisplayFactAsQuestion()){
-                for(f in fact.all_answers!!){
+                val allAnswers = mutableListOf<String>()
+                allAnswers.plusElement(fact.incorrect_answer_1)
+                allAnswers.plusElement(fact.incorrect_answer_2)
+                allAnswers.plusElement(fact.incorrect_answer_3)
+                allAnswers.plusElement(fact.correct_answer)
+
+                allAnswers.shuffle()
+
+                for(f in allAnswers){
                     fact.correct_answer?.let { it1 -> AnswerButton(f, it1, true,
                         code = {
                             factVM.removeFact(fact)
@@ -98,7 +106,7 @@ fun AnswerButton(text: String,
                  code: () -> Unit = {},
                  code2: () -> Unit = {}){
     MaterialTheme {
-        var color = remember{ mutableStateOf(Color.White)}
+        val color = remember{ mutableStateOf(Color.White)}
         ExtendedFloatingActionButton(
             modifier = Modifier
                 .padding(15.dp)
