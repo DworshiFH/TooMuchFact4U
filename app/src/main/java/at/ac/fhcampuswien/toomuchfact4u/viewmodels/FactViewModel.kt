@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.util.Log
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -14,14 +13,16 @@ import at.ac.fhcampuswien.toomuchfact4u.repositories.FactRepository
 import at.ac.fhcampuswien.toomuchfact4u.widgets.simpleNotification
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
-import okhttp3.internal.wait
 
 class FactViewModel( private val repository: FactRepository ) : ViewModel() {
 
     private var _facts = MutableStateFlow<List<Fact>>(emptyList())
-    val facts = _facts.asStateFlow()
 
     init {
+        getAllFactsFromDB()
+    }
+    private fun getAllFactsFromDB(){
+        _facts = MutableStateFlow<List<Fact>>(emptyList())
         viewModelScope.launch(Dispatchers.IO){
             repository.getAllFacts().distinctUntilChanged()
                 .collect { listOfFacts ->
@@ -43,6 +44,14 @@ class FactViewModel( private val repository: FactRepository ) : ViewModel() {
         }
     }
 
+    fun removeFact(fact: Fact) {
+        //TODO null _facts abfangen
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.deleteFact(fact)
+        }
+        getAllFactsFromDB()
+    }
+
     private var categoryUrl = ""
 
     private var useCategoryInUrl = false
@@ -56,45 +65,15 @@ class FactViewModel( private val repository: FactRepository ) : ViewModel() {
 
     private var factFrequency = 5f
 
-    /*fun getNextFactFromQueue() : Fact {
-        //TODO null _facts abfangen
-        Log.i("Fact Array in get",_facts.toString()) // debugging
-        val fact = _facts[0]
-        return fact
-    }*/
     fun getFactsFromVM(): StateFlow<List<Fact>> {
-        return facts
+        return _facts.asStateFlow()
     }
 
-    fun removeFact(fact: Fact) {
-        //TODO null _facts abfangen
-        viewModelScope.launch(Dispatchers.IO) {
-            repository.deleteFact(fact)
-        }
-    }
-
-    suspend fun fetchNewFactTest() {
-
-        /*var fact = Fact(question = "",
-            correct_answer = "",
-            incorrect_answer_1 = "",
-            incorrect_answer_2 = "",
-            incorrect_answer_3 = "")
-
-        viewModelScope.launch{
-        }.join()
-
-        Log.i("FactVM", fact.toString())
-
-        delay(5000L)*/
+    fun fetchNewFactTest() {
 
         viewModelScope.launch(Dispatchers.IO) {
-            val fact = async{ fetchFact(use_category = useCategoryInUrl, category = categoryUrl) }
-            //Log.i("FactVM", "Try to add fact to DB")
-            Log.i("FactVM", fact.await().toString())
-            //repository.addFact(fact.await())
+            fetchFact(use_category = useCategoryInUrl, category = categoryUrl, repository = repository)
         }
-
 
         _context?.let { // Notification
             simpleNotification(
@@ -105,61 +84,6 @@ class FactViewModel( private val repository: FactRepository ) : ViewModel() {
                 priority = NotificationCompat.PRIORITY_HIGH
             )
         }
-
-
-
-        /*val retrofit = Retrofit.Builder()
-            .baseUrl("https://opentdb.com/")
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-
-        val service = retrofit.create(FactsAPI::class.java)
-        CoroutineScope(Dispatchers.IO).launch {
-
-            val response = service.getRandomFact()
-
-            withContext(Dispatchers.Main){
-                if (response.isSuccessful){
-                    Log.i("", response.toString())
-
-                    Log.i("Fact", response.body().toString())
-
-                    var fact = Fact("","", listOf(""),listOf(""))
-
-                    fact.question = response.body()?.result?.get(0)?.question
-                    fact.correct_answer = response.body()?.result?.get(0)?.correct_answer
-                    fact.incorrect_answers = response.body()?.result?.get(0)?.incorrect_answers as List<String>?
-
-                    var answers = fact.incorrect_answers?.plus(fact.correct_answer)
-
-                    if (answers != null) {
-                        shuffle(answers)
-                    }
-
-                    fact.all_answers = answers as List<String>?
-
-                    Log.i("Fact Object", fact.toString())
-
-                    _facts.add(fact)
-
-                    Log.i("Fact Array",_facts.toString()) // debugging
-
-                    _context?.let {
-                        simpleNotification(
-                            context = it,
-                            channelId = CHANNEL_ID,
-                            notificationId = notificationId,
-                            textContent = "A new Fact has arrived 4 U.",
-                            priority = NotificationCompat.PRIORITY_HIGH
-                        )
-                    }
-
-                } else {
-                    Log.e("RETROFIT_ERROR", response.code().toString())
-                }
-            }
-
-        }*/
     }
 
     fun getNumOfFactsInDB() : Int {
@@ -211,9 +135,6 @@ class FactViewModel( private val repository: FactRepository ) : ViewModel() {
     fun getCHANNEL_ID() : String{
         return CHANNEL_ID
     }
-    fun getNotificationId() : Int{
-        return notificationId
-    }
 
     fun setFactFrequency(frequency: Float){
         factFrequency = frequency
@@ -221,8 +142,4 @@ class FactViewModel( private val repository: FactRepository ) : ViewModel() {
     fun getFactFrequency() : Float {
         return factFrequency
     }
-}
-
-private fun Job.onJoin(block: suspend CoroutineScope.() -> Unit) {
-
 }

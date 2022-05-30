@@ -18,4 +18,7 @@ interface FactDao {
 
     @Query("SELECT count(*) from facts")
     fun getFactCount(): Int
+
+    /*@Query("DELETE from facts where id=:id")
+    suspend fun deleteNoteById(id: Long): Fact*/
 }

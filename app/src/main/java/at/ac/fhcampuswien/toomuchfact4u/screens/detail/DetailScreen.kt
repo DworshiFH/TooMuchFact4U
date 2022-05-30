@@ -18,6 +18,7 @@ import androidx.navigation.NavController
 import at.ac.fhcampuswien.toomuchfact4u.Fact
 import at.ac.fhcampuswien.toomuchfact4u.viewmodels.FactViewModel
 import at.ac.fhcampuswien.toomuchfact4u.widgets.simpleNotification
+import java.util.*
 
 @Composable
 fun DetailScreen(factVM : FactViewModel, navController : NavController) {
@@ -56,12 +57,15 @@ fun DetailScreen(factVM : FactViewModel, navController : NavController) {
             }
             if(factVM.getDisplayFactAsQuestion()){
                 val allAnswers = mutableListOf<String>()
-                allAnswers.plusElement(fact.incorrect_answer_1)
-                allAnswers.plusElement(fact.incorrect_answer_2)
-                allAnswers.plusElement(fact.incorrect_answer_3)
-                allAnswers.plusElement(fact.correct_answer)
 
-                allAnswers.shuffle()
+                fact.incorrect_answer_1?.let { it1 -> allAnswers.add(it1) }
+                fact.incorrect_answer_2?.let { it1 -> allAnswers.add(it1) }
+                fact.incorrect_answer_3?.let { it1 -> allAnswers.add(it1) }
+                fact.correct_answer?.let { it1 -> allAnswers.add(it1) }
+
+                Log.i("DetailScreenAllAnswers", allAnswers.toString())
+
+                Collections.shuffle(allAnswers)
 
                 for(f in allAnswers){
                     fact.correct_answer?.let { it1 -> AnswerButton(f, it1, true,
