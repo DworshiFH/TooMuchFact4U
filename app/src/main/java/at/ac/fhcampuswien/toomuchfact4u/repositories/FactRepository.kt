@@ -1,6 +1,6 @@
 package at.ac.fhcampuswien.toomuchfact4u.repositories
 
-import at.ac.fhcampuswien.toomuchfact4u.Fact
+import at.ac.fhcampuswien.toomuchfact4u.dataModels.Fact
 import at.ac.fhcampuswien.toomuchfact4u.db.FactDao
 import kotlinx.coroutines.flow.Flow
 

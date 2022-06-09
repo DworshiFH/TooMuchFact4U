@@ -1,4 +1,4 @@
-package at.ac.fhcampuswien.toomuchfact4u
+package at.ac.fhcampuswien.toomuchfact4u.dataModels
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity

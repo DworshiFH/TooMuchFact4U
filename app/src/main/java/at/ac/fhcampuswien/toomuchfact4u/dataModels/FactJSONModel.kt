@@ -1,4 +1,4 @@
-package at.ac.fhcampuswien.toomuchfact4u.api
+package at.ac.fhcampuswien.toomuchfact4u.dataModels
 
 import com.google.gson.annotations.SerializedName
 
@@ -6,10 +6,10 @@ data class FactJSONModel(
     @SerializedName("response:code")
     var response_code: Int?,
     @SerializedName("results")
-    var result: List<Fact>?
+    var result: List<FactJSON>?
 )
 
-data class Fact(
+data class FactJSON(
     @SerializedName("category")
     val category: String?,
     @SerializedName("correct_answer")

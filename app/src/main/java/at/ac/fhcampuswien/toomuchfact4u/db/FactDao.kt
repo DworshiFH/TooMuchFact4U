@@ -2,7 +2,7 @@ package at.ac.fhcampuswien.toomuchfact4u.db
 
 import androidx.room.*
 import kotlinx.coroutines.flow.Flow
-import at.ac.fhcampuswien.toomuchfact4u.Fact
+import at.ac.fhcampuswien.toomuchfact4u.dataModels.Fact
 
 @Dao
 interface FactDao {

@@ -1,34 +1,23 @@
 package at.ac.fhcampuswien.toomuchfact4u
 
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.content.Context
-import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.lifecycle.viewmodel.compose.viewModel
-import at.ac.fhcampuswien.toomuchfact4u.db.FactDB
+import androidx.navigation.compose.rememberNavController
+import androidx.work.*
 import at.ac.fhcampuswien.toomuchfact4u.navigation.FactNavigation
+import at.ac.fhcampuswien.toomuchfact4u.workers.FetchFactWorker
+import at.ac.fhcampuswien.toomuchfact4u.workers.NotifyNumOfFactsInDbWorker
 import at.ac.fhcampuswien.toomuchfact4u.ui.theme.TooMuchFact4UTheme
-import at.ac.fhcampuswien.toomuchfact4u.viewmodels.FactViewModel
-import at.ac.fhcampuswien.toomuchfact4u.widgets.*
+import java.util.concurrent.TimeUnit
 
 class MainActivity : ComponentActivity() {
 
     override fun onStart(){
         super.onStart()
         Log.i("MainActivity", "onStart called")
-        //TODO start Fact Thread
     }
 
     override fun onResume(){
@@ -58,6 +47,33 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val fetchFactRequest = OneTimeWorkRequestBuilder<FetchFactWorker>()
+            .setConstraints(
+                Constraints.Builder()
+                    .setRequiredNetworkType(NetworkType.CONNECTED)
+                    .build()
+            )
+            .setInitialDelay(1, TimeUnit.MINUTES)
+            .build()
+
+        val workManager = WorkManager.getInstance(applicationContext)
+
+        WorkManager.getInstance(applicationContext).enqueueUniqueWork(
+            "fetchFactRequest",
+            ExistingWorkPolicy.KEEP,
+            fetchFactRequest)
+
+        val notifyNumOfFactsInDbRequest = OneTimeWorkRequestBuilder<NotifyNumOfFactsInDbWorker>()
+            .setInitialDelay(60, TimeUnit.MINUTES)
+            .build()
+
+        workManager.beginUniqueWork(
+            "notifyNumOfFactsInDb",
+            ExistingWorkPolicy.KEEP,
+            notifyNumOfFactsInDbRequest
+        ).enqueue()
+
         setContent {
             TooMuchFact4UTheme {
                 // A surface container using the 'background' color from the theme
@@ -66,13 +82,11 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
-        //TODO start worker
     }
 }
 
 @Composable
 fun MyApp(content: @Composable () -> Unit){
-
     TooMuchFact4UTheme() {
         content()
     }

@@ -4,27 +4,40 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.util.Log
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import at.ac.fhcampuswien.toomuchfact4u.Fact
 import at.ac.fhcampuswien.toomuchfact4u.api.fetchFact
+import at.ac.fhcampuswien.toomuchfact4u.dataModels.Fact
+import at.ac.fhcampuswien.toomuchfact4u.dataModels.Settings
 import at.ac.fhcampuswien.toomuchfact4u.repositories.FactRepository
+import at.ac.fhcampuswien.toomuchfact4u.repositories.SettingsRepository
 import at.ac.fhcampuswien.toomuchfact4u.widgets.simpleNotification
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 
-class FactViewModel( private val repository: FactRepository ) : ViewModel() {
+class FactViewModel(
+    private val factRepository: FactRepository,
+    private val settingsRepository: SettingsRepository
+    ) : ViewModel() {
 
     private var _facts = MutableStateFlow<List<Fact>>(emptyList())
+    private lateinit var _settings: Settings
+
+    @SuppressLint("StaticFieldLeak")
+    private var _context: Context? = null
 
     init {
         getAllFactsFromDB()
+        getSettingsFromDB()
     }
+
     private fun getAllFactsFromDB(){
         _facts = MutableStateFlow<List<Fact>>(emptyList())
         viewModelScope.launch(Dispatchers.IO){
-            repository.getAllFacts().distinctUntilChanged()
+            factRepository.getAllFacts().distinctUntilChanged()
                 .collect { listOfFacts ->
                     if(listOfFacts.isNullOrEmpty()){
                         Log.d("FactViewModel", "Empty fact list")
@@ -34,7 +47,7 @@ class FactViewModel( private val repository: FactRepository ) : ViewModel() {
                 }
         }
         viewModelScope.launch(Dispatchers.IO){
-            repository.getAllFacts().collect { listOfFacts ->
+            factRepository.getAllFacts().collect { listOfFacts ->
                 if(listOfFacts.isNullOrEmpty()){
                     Log.d("FactViewModel", "No facts 4 U")
                 } else {
@@ -44,102 +57,119 @@ class FactViewModel( private val repository: FactRepository ) : ViewModel() {
         }
     }
 
-    fun removeFact(fact: Fact) {
-        //TODO null _facts abfangen
+    private fun getSettingsFromDB(){
         viewModelScope.launch(Dispatchers.IO) {
-            repository.deleteFact(fact)
+            _settings = settingsRepository.getSettings()
+        }
+    }
+
+    fun deleteFact(fact: Fact) {
+        viewModelScope.launch(Dispatchers.IO) {
+            factRepository.deleteFact(fact)
         }
         getAllFactsFromDB()
     }
 
-    private var categoryUrl = ""
+    @Composable
+    fun getFactsFromVM(): List<Fact> {
+        val facts: List<Fact> by _facts.asStateFlow().collectAsState()
+        return facts
+    }
 
-    private var useCategoryInUrl = false
+    @Composable
+    fun getNumOfFactsInDB() : Int {
+        return getFactsFromVM().size
+    }
 
-    private val _categories = listOf("All Categories", "Sports", "History")
+    private val _categories = listOf("All Categories", "Sports", "History", "Movies", "Animals", "Anime & Manga", "Vehicles", "Computers")
 
-    @SuppressLint("StaticFieldLeak")
-    private var _context: Context? = null
-    private val CHANNEL_ID = "FactNotifications"
-    private val notificationId = 0
+    fun getCategoryList() : List<String>{
+        return _categories
+    }
 
-    private var factFrequency = 5f
+    fun setCategory(index: Int){
+        when(index) {
+            0 -> {_settings.category = "" } //All
+            1 -> {_settings.category = "21"} //Sports
+            2 -> {_settings.category = "23"} //History
+            3 -> {_settings.category = "11"} //Movies
+            4 -> {_settings.category = "27"} //Animals
+            5 -> {_settings.category = "31"} //Anime and Manga
+            6 -> {_settings.category = "28"} //Vehicles
+            7 -> {_settings.category = "18"} //Computers
+        }
+        updateSettings()
+    }
 
-    fun getFactsFromVM(): StateFlow<List<Fact>> {
-        return _facts.asStateFlow()
+    fun getSelectedCategory(): Int{
+        when(_settings.category) {
+            "" -> return 0
+            "21" -> return 1
+            "23" -> return 2
+            "11" -> return 3
+            "27" -> return 4
+            "31" -> return 5
+            "28" -> return 6
+            "18" -> return 7
+        }
+        return 0
+    }
+
+    fun getDisplayFactAsQuestion(): Boolean? {
+        return _settings.display_fact_as_question
+    }
+
+    fun setDisplayFactAsQuestion(displayFactAsQuestion: Boolean){
+        _settings.display_fact_as_question = displayFactAsQuestion
+        updateSettings()
+    }
+
+    private fun updateSettings(){
+        viewModelScope.launch(Dispatchers.IO) {
+            settingsRepository.updateSettings(_settings)
+        }
+    }
+
+    fun setUseSound(useSound: Boolean){
+        _settings.use_sound = useSound
+        updateSettings()
+    }
+
+    fun getUseSound(): Boolean? {
+        return _settings.use_sound
+    }
+
+    fun setFactFrequency(frequency: Float){
+        _settings.fact_frequency = frequency
+        updateSettings()
+    }
+
+    fun getFactFrequency() : Float? {
+        return _settings.fact_frequency
+    }
+
+    @Composable
+    fun SetNotificationContext(context: Context){
+        _context = context
+    }
+
+    fun getNotificationContext() : Context? {
+        return _context
     }
 
     fun fetchNewFactTest() {
 
         viewModelScope.launch(Dispatchers.IO) {
-            fetchFact(use_category = useCategoryInUrl, category = categoryUrl, repository = repository)
+            _settings.category?.let { fetchFact(category = it, repository = factRepository) }
         }
 
         _context?.let { // Notification
             simpleNotification(
                 context = it,
-                channelId = CHANNEL_ID,
-                notificationId = notificationId,
+                notificationId = 0,
                 textContent = "A new Fact has arrived 4 U.",
                 priority = NotificationCompat.PRIORITY_HIGH
             )
         }
-    }
-
-    fun getNumOfFactsInDB() : Int {
-        var size = 0
-        viewModelScope.launch(Dispatchers.IO) {
-            size = repository.getFactCount()
-        }
-        return size
-    }
-
-    fun getCategoryList() : List<String>{
-        return _categories
-    }
-    fun setCategory(index: Int){
-        when(index) {
-            0 -> {categoryUrl = ""
-                    useCategoryInUrl = false} //All
-            1 -> {categoryUrl = "21"
-                    useCategoryInUrl = true} //Sports
-            2 -> {categoryUrl = "23"
-                    useCategoryInUrl = true} //History
-        }
-    }
-
-    private var displayFactAsQuestion = true
-    fun getDisplayFactAsQuestion(): Boolean{
-        return displayFactAsQuestion
-    }
-    fun setDisplayFactAsQuestion(displayFactAsQuestion: Boolean){
-        this.displayFactAsQuestion = displayFactAsQuestion
-    }
-
-    private var useSound = true
-    fun getUseSound(): Boolean{
-        return useSound
-    }
-    fun setUseSound(useSound: Boolean){
-        this.useSound = useSound
-    }
-
-    @Composable
-    fun setNotificationContext(context: Context){
-        _context = context
-    }
-    fun getNotificationContext() : Context? {
-        return _context
-    }
-
-    fun getCHANNEL_ID() : String{
-        return CHANNEL_ID
-    }
-
-    fun setFactFrequency(frequency: Float){
-        factFrequency = frequency
-    }
-    fun getFactFrequency() : Float {
-        return factFrequency
     }
 }

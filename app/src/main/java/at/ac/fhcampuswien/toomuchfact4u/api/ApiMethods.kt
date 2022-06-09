@@ -1,7 +1,9 @@
 package at.ac.fhcampuswien.toomuchfact4u.api
 
+import android.os.Build
+import android.text.Html
 import android.util.Log
-import at.ac.fhcampuswien.toomuchfact4u.Fact
+import at.ac.fhcampuswien.toomuchfact4u.dataModels.Fact
 import at.ac.fhcampuswien.toomuchfact4u.repositories.FactRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -9,11 +11,10 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import java.util.*
 
-fun fetchFact(use_category: Boolean = false, category: String = "23", repository: FactRepository){
+fun fetchFact(category: String = "", repository: FactRepository){
 
-    var fact = Fact(question = "",
+    val fact = Fact(question = "",
         correct_answer = "",
         incorrect_answer_1 = "",
         incorrect_answer_2 = "",
@@ -28,10 +29,10 @@ fun fetchFact(use_category: Boolean = false, category: String = "23", repository
     val service = retrofit.create(FactsAPI::class.java)
     CoroutineScope(Dispatchers.IO).launch {
 
-        val response = if(use_category){
-            service.getFactFromCategory(category)
-        } else {
+        val response = if(category == ""){
             service.getRandomFact()
+        } else {
+            service.getFactFromCategory(category)
         }
 
         withContext(Dispatchers.Main){
@@ -41,15 +42,15 @@ fun fetchFact(use_category: Boolean = false, category: String = "23", repository
                 Log.i("Fact", response.body().toString())
 
                 //parsing FactJSONModel object to Fact object
-                fact.question = response.body()?.result?.get(0)?.question
-                fact.correct_answer = response.body()?.result?.get(0)?.correct_answer
-                fact.incorrect_answer_1 = response.body()?.result?.get(0)?.incorrect_answers?.get(0)
-                if(response.body()?.result?.get(0)?.incorrect_answers?.get(1) != null){
-                    fact.incorrect_answer_2 = response.body()?.result?.get(0)?.incorrect_answers?.get(1)
+                fact.question = response.body()?.result?.get(0)?.question?.let {
+                    convertHtmlToString(it)
                 }
-                if(response.body()?.result?.get(0)?.incorrect_answers?.get(2) != null){
-                    fact.incorrect_answer_3 = response.body()?.result?.get(0)?.incorrect_answers?.get(2)
+                fact.correct_answer = response.body()?.result?.get(0)?.correct_answer?.let {
+                    convertHtmlToString(it)
                 }
+                fact.incorrect_answer_1 = convertHtmlToString(response.body()?.result?.get(0)?.incorrect_answers?.get(0)!!)
+                fact.incorrect_answer_2 = convertHtmlToString(response.body()?.result?.get(0)?.incorrect_answers?.get(1)!!)
+                fact.incorrect_answer_3 = convertHtmlToString(response.body()?.result?.get(0)?.incorrect_answers?.get(2)!!)
 
                 repository.addFact(fact)
 
@@ -58,4 +59,13 @@ fun fetchFact(use_category: Boolean = false, category: String = "23", repository
             }
         }
     }
+}
+
+private fun convertHtmlToString(str: String): String {
+    val ret_str = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+        Html.fromHtml(str, Html.FROM_HTML_MODE_LEGACY).toString()
+    } else {
+        Html.fromHtml(str).toString()
+    }
+    return ret_str
 }

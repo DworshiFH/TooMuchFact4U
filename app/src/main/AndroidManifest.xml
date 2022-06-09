@@ -15,7 +15,7 @@
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:label="@string/app_name"
+            android:label="2 Much Fact 4 U"
             android:theme="@style/Theme.TooMuchFact4U">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
