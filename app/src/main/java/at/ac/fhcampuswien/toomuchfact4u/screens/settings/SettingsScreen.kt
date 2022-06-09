@@ -18,7 +18,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import at.ac.fhcampuswien.toomuchfact4u.navigation.FactScreens
 import at.ac.fhcampuswien.toomuchfact4u.widgets.simpleNotification
-import kotlinx.coroutines.launch
 
 @Composable
 fun SettingsScreen(factVM: FactViewModel = viewModel(), navController: NavController){
@@ -84,8 +83,6 @@ fun MainContent(factVM: FactViewModel){
                         valueRange = 1f..5f,
                         onValueChangeFinished = {
                             Log.i("HomeScreen","Fact Frequency Value Changed")
-                            //TODO
-                            //TODO: Notification
                             factVM.setFactFrequency(sliderPosition!!)
                             context?.let {
                                 simpleNotification(
@@ -120,12 +117,11 @@ fun MainContent(factVM: FactViewModel){
                         onCheckedChange = {
                             useSoundState.value = it
                             factVM.setUseSound(it)
-                            var text = ""
                             context?.let {
-                                if(useSoundState.value!!){
-                                    text = "Now using pleasant sounds."
+                                val text = if(useSoundState.value!!){
+                                    "Now using pleasant sounds."
                                 } else {
-                                    text = "No longer using pleasant sounds."
+                                    "No longer using pleasant sounds."
                                 }
                                 simpleNotification(
                                     context = it,
@@ -159,8 +155,7 @@ fun MainContent(factVM: FactViewModel){
                             factVM.setDisplayFactAsQuestion(it)
                             context?.let {
 
-                                var text = ""
-                                text = if(factAsQuestionCheckedState.value!!){
+                                val text = if(factAsQuestionCheckedState.value!!){
                                     "Now displaying Facts as questions, exciting."
                                 } else {
                                     "Now simply displaying Facts, boring."
