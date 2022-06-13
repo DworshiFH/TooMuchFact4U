@@ -35,11 +35,9 @@ class FetchFactWorker(context: Context, workerParams: WorkerParameters):
             //fetch a new fact
             val settings = settingsRepository.getSettings()
 
-            settings.category?.let { fetchFact(category = it,repository = factRepository) }
+            settings.category?.let { fetchFact(category = it, repository = factRepository, context = context) }
 
             Log.i("FetchFactWorker", "success == true")
-
-            notification()
         }
 
         scope.launch {
@@ -81,14 +79,5 @@ class FetchFactWorker(context: Context, workerParams: WorkerParameters):
         }
 
         return Result.success()
-    }
-
-    private fun notification(){
-        notificationWithLaunchApp(
-            context = context,
-            notificationId = 0,
-            textContent = "A new Fact has arrived 4 U, tap here to view it.",
-            priority = NotificationCompat.PRIORITY_HIGH
-        )
     }
 }

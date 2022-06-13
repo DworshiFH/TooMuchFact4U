@@ -40,18 +40,12 @@ abstract class SettingsDB: RoomDatabase() {
                                 fact_frequency = 5f,
                                 use_sound = false,
                                 display_fact_as_question = true,
-                                category = "")
-                            //TODO add default category "ALL"
+                                category = "") // default category 'ALL' is empty string
                             val scope = CoroutineScope(Dispatchers.IO)
                             scope.launch {
                                 getDatabase(context).settingsDao().insertSettings(settings = settings)
                             }
                         }
-
-                        /*override fun onOpen(db: SupportSQLiteDatabase) {
-                            super.onOpen(db)
-                            // do work on each start
-                        }*/
                     }
                 )
                 .fallbackToDestructiveMigration()

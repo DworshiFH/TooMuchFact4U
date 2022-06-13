@@ -158,9 +158,10 @@ class FactViewModel(
     }
 
     fun fetchNewFactTest() {
-
         viewModelScope.launch(Dispatchers.IO) {
-            _settings.category?.let { fetchFact(category = it, repository = factRepository) }
+            _settings.category?.let {
+                _context?.let {
+                        it1 -> fetchFact(category = it, repository = factRepository, context = it1) } }
         }
 
         _context?.let { // Notification

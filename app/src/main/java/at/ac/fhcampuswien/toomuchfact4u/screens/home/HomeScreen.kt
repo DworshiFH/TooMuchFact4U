@@ -93,7 +93,9 @@ fun HomeScreen(factVM : FactViewModel, navController : NavController) {
                     }
                 }
             } else {
-                fact.correct_answer?.let { it1 -> AnswerButton(it1, fact.correct_answer!!, false) }
+                fact.correct_answer?.let {
+                        it1 -> AnswerButton(it1, fact.correct_answer!!, false)
+                }
                 factVM.deleteFact(fact)
             }
 
